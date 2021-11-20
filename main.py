@@ -1,5 +1,6 @@
+import random
 import pygame
-from pygame.sprite import GroupSingle
+from pygame.sprite import Group, GroupSingle
 
 pygame.display.set_caption("Shark Game")
 window_surface = pygame.display.set_mode((1200, 800))
@@ -10,7 +11,7 @@ class Shark(pygame.sprite.Sprite):
         super().__init__()
         # TODO: Import and setup sprite sheet
         self.image = pygame.transform.scale(
-            pygame.image.load("Assets/Arts/shark.png").convert_alpha(), (200, 100))
+            pygame.image.load("Assets/Arts/shark.png").convert_alpha(), (100, 50))
         self.rect = self.image.get_rect(center=(600, 400))
         self.isRight = True
 
@@ -29,6 +30,24 @@ class Shark(pygame.sprite.Sprite):
         self.get_direction()
 
 
+class Fish(pygame.sprite.Sprite):
+    # ? Using color, size and position arg or not?
+    def __init__(self):
+        super().__init__()
+        # Temp, Depend on color argument
+        image_source = pygame.image.load(
+            "Assets/Arts/fish.png").convert_alpha()
+        size = random.randint(1, 3)
+        self.image = pygame.transform.scale(
+            image_source, (size * 100, size * 50))
+        # Temp, Depend on position argument
+        self.rect = self.image.get_rect(
+            center=(random.randint(-1920, 1920 + 1200), random.randint(100, 700)))
+
+    def movement(self):
+        pass
+
+
 class Background:
     def __init__(self):
         self.image_01 = pygame.transform.scale(
@@ -38,6 +57,8 @@ class Background:
         self.rect_01 = self.image_01.get_rect(bottomleft=(0, 800))
         self.rect_02 = self.image_02.get_rect(bottomright=(0, 800))
         self.current_rect = self.rect_01
+
+    # TODO: Parolox Scrolling
 
     def scroll(self):
         # TODO: Change velocity base on how big player grow
@@ -65,21 +86,22 @@ class Background:
         if self.current_rect.right < 1300:
             if self.current_rect == self.rect_01:
                 self.rect_02.left = self.rect_01.right
-            if self.current_rect == self.rect_02:
+            elif self.current_rect == self.rect_02:
                 self.rect_01.left = self.rect_02.right
         if self.current_rect.left > -100:
             if self.current_rect == self.rect_01:
                 self.rect_02.right = self.rect_01.left
-            if self.current_rect == self.rect_02:
+            elif self.current_rect == self.rect_02:
                 self.rect_01.right = self.rect_02.left
 
 
-def render(shark_group: GroupSingle, background: Background):
+def render(shark_group: GroupSingle, fish_group: Group, background: Background):
     background.scroll()
     background.switch()
     window_surface.blit(background.image_01, background.rect_01)
     window_surface.blit(background.image_02, background.rect_02)
 
+    fish_group.draw(window_surface)
     shark_group.draw(window_surface)
 
     pygame.display.update()
@@ -95,6 +117,10 @@ def main():
     shark_group = pygame.sprite.GroupSingle()
     shark_group.add(shark)
 
+    fish_group = pygame.sprite.Group()
+    for i in range(0, 5):
+        fish_group.add(Fish())
+
     while True:
         clock.tick(60)
 
@@ -103,7 +129,7 @@ def main():
                 pygame.quit()
 
         shark_group.update()
-        render(shark_group, backround)
+        render(shark_group, fish_group, backround)
 
 
 if __name__ == "__main__":
