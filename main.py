@@ -57,14 +57,11 @@ class Background:
             self.rect_02.y -= scrolling_speed
 
     def switch(self):
-        # ? It works but I don't know why
         if self.current_rect.right < 600 or self.current_rect.left > 600:
             if self.current_rect == self.rect_01:
-                self.current_rect.right = self.rect_02.right
-                self.current_rect.left = self.rect_02.left
-            if self.current_rect == self.rect_02:
-                self.current_rect.right = self.rect_01.right
-                self.current_rect.left = self.rect_01.left
+                self.current_rect = self.rect_02
+            elif self.current_rect == self.rect_02:
+                self.current_rect = self.rect_01
         if self.current_rect.right < 1300:
             if self.current_rect == self.rect_01:
                 self.rect_02.left = self.rect_01.right
