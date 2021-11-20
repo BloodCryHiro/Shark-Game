@@ -29,32 +29,60 @@ class Shark(pygame.sprite.Sprite):
         self.get_direction()
 
 
-class Background(pygame.sprite.Sprite):
+class Background:
     def __init__(self):
-        super().__init__()
-        self.image = pygame.transform.scale(
-            pygame.image.load("Assets/Arts/background.png").convert_alpha(), (1280, 960))
-        self.rect = self.image.get_rect(bottomleft=(0, 800))
+        self.image_01 = pygame.transform.scale(
+            pygame.image.load("Assets/Arts/background.png").convert_alpha(), (1920, 1440))
+        self.image_02 = pygame.transform.scale(
+            pygame.image.load("Assets/Arts/background.png").convert_alpha(), (1920, 1440))  # Temp sprite
+        self.rect_01 = self.image_01.get_rect(bottomleft=(0, 800))
+        self.rect_02 = self.image_02.get_rect(bottomright=(0, 800))
+        self.current_rect = self.rect_01
 
-    def scrolling(self):
+    def scroll(self):
         # TODO: Change velocity base on how big player grow
         scrolling_speed = 5
         pressed_key = pygame.key.get_pressed()
         if pressed_key[pygame.K_LEFT]:
-            self.rect.x += scrolling_speed
+            self.rect_01.x += scrolling_speed
+            self.rect_02.x += scrolling_speed
         if pressed_key[pygame.K_RIGHT]:
-            self.rect.x -= scrolling_speed
-        if pressed_key[pygame.K_UP]:
-            self.rect.y += scrolling_speed
-        if pressed_key[pygame.K_DOWN]:
-            self.rect.y -= scrolling_speed
+            self.rect_01.x -= scrolling_speed
+            self.rect_02.x -= scrolling_speed
+        if pressed_key[pygame.K_UP] and self.rect_01.top < 0:
+            self.rect_01.y += scrolling_speed
+            self.rect_02.y += scrolling_speed
+        if pressed_key[pygame.K_DOWN] and self.rect_01.bottom > 800:
+            self.rect_01.y -= scrolling_speed
+            self.rect_02.y -= scrolling_speed
 
-    def update(self):
-        self.scrolling()
+    def switch(self):
+        # ? It works but I don't know why
+        if self.current_rect.right < 600 or self.current_rect.left > 600:
+            if self.current_rect == self.rect_01:
+                self.current_rect.right = self.rect_02.right
+                self.current_rect.left = self.rect_02.left
+            if self.current_rect == self.rect_02:
+                self.current_rect.right = self.rect_01.right
+                self.current_rect.left = self.rect_01.left
+        if self.current_rect.right < 1300:
+            if self.current_rect == self.rect_01:
+                self.rect_02.left = self.rect_01.right
+            if self.current_rect == self.rect_02:
+                self.rect_01.left = self.rect_02.right
+        if self.current_rect.left > -100:
+            if self.current_rect == self.rect_01:
+                self.rect_02.right = self.rect_01.left
+            if self.current_rect == self.rect_02:
+                self.rect_01.right = self.rect_02.left
 
 
-def render(shark_group: GroupSingle, background_group: GroupSingle):
-    background_group.draw(window_surface)
+def render(shark_group: GroupSingle, background: Background):
+    background.scroll()
+    background.switch()
+    window_surface.blit(background.image_01, background.rect_01)
+    window_surface.blit(background.image_02, background.rect_02)
+
     shark_group.draw(window_surface)
 
     pygame.display.update()
@@ -65,8 +93,6 @@ def main():
     clock = pygame.time.Clock()
 
     backround = Background()
-    backround_group = pygame.sprite.GroupSingle()
-    backround_group.add(backround)
 
     shark = Shark()
     shark_group = pygame.sprite.GroupSingle()
@@ -79,9 +105,8 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
 
-        backround_group.update()
         shark_group.update()
-        render(shark_group, backround_group)
+        render(shark_group, backround)
 
 
 if __name__ == "__main__":
