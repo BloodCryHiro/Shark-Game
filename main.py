@@ -40,12 +40,13 @@ class Fish(pygame.sprite.Sprite):
         size = random.randint(1, 3)
         self.image = pygame.transform.scale(
             image_source, (size * 100, size * 50))
-        # Temp, Depend on position argument
         self.rect = self.image.get_rect(
-            center=(random.randint(-1920, 1920 + 1200), random.randint(100, 700)))
-
-    def movement(self):
-        pass
+            center=(random.randint(100, 1920 * 2 - 100), random.randint(100, 1440 - 100)))
+        # ? How to make fish instances switch with background
+        if self.rect.x > 1920:
+            self.position_in_map = "Right"
+        else:
+            self.position_in_map = "Left"
 
 
 class Background:
@@ -53,10 +54,13 @@ class Background:
         self.image_01 = pygame.transform.scale(
             pygame.image.load("Assets/Arts/background.png").convert_alpha(), (1920, 1440))
         self.image_02 = pygame.transform.scale(
-            pygame.image.load("Assets/Arts/background.png").convert_alpha(), (1920, 1440))  # Temp sprite
-        self.rect_01 = self.image_01.get_rect(bottomleft=(0, 800))
-        self.rect_02 = self.image_02.get_rect(bottomright=(0, 800))
-        self.current_rect = self.rect_01
+            pygame.image.load("Assets/Arts/background_test.png").convert_alpha(), (1920, 1440))  # Temp sprite
+
+        self.image = pygame.Surface((1920 * 2, 1440))
+        self.rect = self.image.get_rect(midbottom=(0, 800))
+        self.image.blit(self.image_01, (1920, 0))
+        self.image.blit(self.image_02, (0, 0))
+        self.image_right = 1
 
     # TODO: Parolox Scrolling
 
@@ -65,43 +69,45 @@ class Background:
         scrolling_speed = 5
         pressed_key = pygame.key.get_pressed()
         if pressed_key[pygame.K_LEFT]:
-            self.rect_01.x += scrolling_speed
-            self.rect_02.x += scrolling_speed
+            self.rect.x += scrolling_speed
         if pressed_key[pygame.K_RIGHT]:
-            self.rect_01.x -= scrolling_speed
-            self.rect_02.x -= scrolling_speed
-        if pressed_key[pygame.K_UP] and self.rect_01.top < 0:
-            self.rect_01.y += scrolling_speed
-            self.rect_02.y += scrolling_speed
-        if pressed_key[pygame.K_DOWN] and self.rect_01.bottom > 800:
-            self.rect_01.y -= scrolling_speed
-            self.rect_02.y -= scrolling_speed
+            self.rect.x -= scrolling_speed
+        if pressed_key[pygame.K_UP] and self.rect.top < 0:
+            self.rect.y += scrolling_speed
+        if pressed_key[pygame.K_DOWN] and self.rect.bottom > 800:
+            self.rect.y -= scrolling_speed
 
     def switch(self):
-        if self.current_rect.right < 600 or self.current_rect.left > 600:
-            if self.current_rect == self.rect_01:
-                self.current_rect = self.rect_02
-            elif self.current_rect == self.rect_02:
-                self.current_rect = self.rect_01
-        if self.current_rect.right < 1300:
-            if self.current_rect == self.rect_01:
-                self.rect_02.left = self.rect_01.right
-            elif self.current_rect == self.rect_02:
-                self.rect_01.left = self.rect_02.right
-        if self.current_rect.left > -100:
-            if self.current_rect == self.rect_01:
-                self.rect_02.right = self.rect_01.left
-            elif self.current_rect == self.rect_02:
-                self.rect_01.right = self.rect_02.left
+        # FIXME: Doesn't work normally. Fish will stuck at the initial position on self.image
+        if 0 - self.rect.left < 200:
+            if self.image_right == 1:
+                self.image.blit(self.image_01, (0, 0))
+                self.image.blit(self.image_02, (1920, 0))
+                self.image_right = 2
+            elif self.image_right == 2:
+                self.image.blit(self.image_01, (1920, 0))
+                self.image.blit(self.image_02, (0, 0))
+                self.image_right = 1
+            self.rect.x -= 1920
+        elif self.rect.right - 1200 < 200:
+            if self.image_right == 1:
+                self.image.blit(self.image_01, (0, 0))
+                self.image.blit(self.image_02, (1920, 0))
+                self.image_right = 2
+            elif self.image_right == 2:
+                self.image.blit(self.image_01, (1920, 0))
+                self.image.blit(self.image_02, (0, 0))
+                self.image_right = 1
+            self.rect.x += 1920
 
 
 def render(shark_group: GroupSingle, fish_group: Group, background: Background):
     background.scroll()
     background.switch()
-    window_surface.blit(background.image_01, background.rect_01)
-    window_surface.blit(background.image_02, background.rect_02)
+    fish_group.draw(background.image)
+    window_surface.blit(background.image, background.rect)
 
-    fish_group.draw(window_surface)
+    shark_group.update()
     shark_group.draw(window_surface)
 
     pygame.display.update()
@@ -128,7 +134,6 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
 
-        shark_group.update()
         render(shark_group, fish_group, backround)
 
 
