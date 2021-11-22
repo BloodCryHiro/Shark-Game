@@ -48,6 +48,14 @@ class Fish(pygame.sprite.Sprite):
         else:
             self.position_in_map = "Left"
 
+    def switch(self):
+        if self.position_in_map == "Right":
+            self.rect.x -= 1920
+            self.position_in_map = "Left"
+        elif self.position_in_map == "Left":
+            self.rect.x += 1920
+            self.position_in_map = "Right"
+
 
 class Background:
     def __init__(self):
@@ -61,6 +69,8 @@ class Background:
         self.image.blit(self.image_01, (1920, 0))
         self.image.blit(self.image_02, (0, 0))
         self.image_right = 1
+
+        self.background_switch = pygame.USEREVENT + 1
 
     # TODO: Parolox Scrolling
 
@@ -78,7 +88,6 @@ class Background:
             self.rect.y -= scrolling_speed
 
     def switch(self):
-        # FIXME: Doesn't work normally. Fish will stuck at the initial position on self.image
         if 0 - self.rect.left < 200:
             if self.image_right == 1:
                 self.image.blit(self.image_01, (0, 0))
@@ -89,6 +98,7 @@ class Background:
                 self.image.blit(self.image_02, (0, 0))
                 self.image_right = 1
             self.rect.x -= 1920
+            pygame.event.post(pygame.event.Event(self.background_switch))
         elif self.rect.right - 1200 < 200:
             if self.image_right == 1:
                 self.image.blit(self.image_01, (0, 0))
@@ -99,12 +109,13 @@ class Background:
                 self.image.blit(self.image_02, (0, 0))
                 self.image_right = 1
             self.rect.x += 1920
+            pygame.event.post(pygame.event.Event(self.background_switch))
 
 
 def render(shark_group: GroupSingle, fish_group: Group, background: Background):
     background.scroll()
-    background.switch()
     fish_group.draw(background.image)
+    background.switch()
     window_surface.blit(background.image, background.rect)
 
     shark_group.update()
@@ -133,6 +144,10 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
+            if event.type == backround.background_switch:
+                fish: Fish
+                for fish in fish_group.sprites():
+                    fish.switch()
 
         render(shark_group, fish_group, backround)
 
