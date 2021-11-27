@@ -1,5 +1,6 @@
 import pygame
 from pygame.sprite import Group, GroupSingle
+from config import *
 from background import Background
 from shark import Shark
 from fish import Fish
@@ -11,14 +12,12 @@ window_surface = pygame.display.set_mode((1200, 800))
 
 
 def collision(shark_group: GroupSingle, fish_group: Group):
-    fish: Fish
     shark_fish_collision_list = pygame.sprite.spritecollide(
         shark_group.sprite, fish_group, False)
+
     if shark_fish_collision_list:
-        # shark method
-        for fish in fish_group:
-            # Fish method
-            pass
+        pygame.event.post(pygame.event.Event(SHARK_FISH_COLLITSION))
+        return shark_fish_collision_list
 
 
 def render(shark_group: GroupSingle, fish_group: Group, background_group: GroupSingle, background: Background, sprite_manager: SpriteManager):
@@ -58,19 +57,21 @@ def main():
     while True:
         clock.tick(60)
 
-        collision(shark_group, fish_group)
+        shark_fish_collision_list = collision(shark_group, fish_group)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-            if event.type == background.background_switch_right:
+            if event.type == BACKGROUND_SWITCH_RIGHT:
                 fish: Fish
                 for fish in fish_group.sprites():
                     fish.switch("right")
-            if event.type == background.background_switch_left:
+            if event.type == BACKGROUND_SWITCH_LEFT:
                 fish: Fish
                 for fish in fish_group.sprites():
                     fish.switch("left")
+            if event.type == SHARK_FISH_COLLITSION:
+                shark.collision_fish(shark_fish_collision_list[0])
 
         render(shark_group, fish_group, background_group,
                background, sprite_manager)

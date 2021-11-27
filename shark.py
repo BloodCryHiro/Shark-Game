@@ -32,6 +32,7 @@ class Shark(pygame.sprite.Sprite):
             # Gain more health
             # Get score
             # Get poisoned
+            fish.collision_shark()
         else:
             # Get hurt
             # Become invisible for a while

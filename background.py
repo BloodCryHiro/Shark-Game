@@ -1,4 +1,5 @@
 import pygame
+from config import *
 
 
 class Background(pygame.sprite.Sprite):
@@ -15,9 +16,6 @@ class Background(pygame.sprite.Sprite):
         self.image.blit(self.image_02, (0, 0))
         self.image_right = 1
 
-        self.background_switch_right = pygame.USEREVENT + 1
-        self.background_switch_left = pygame.USEREVENT + 2
-
     def switch(self):
         if 0 - self.rect.left < 200:
             if self.image_right == 1:
@@ -29,7 +27,7 @@ class Background(pygame.sprite.Sprite):
                 self.image.blit(self.image_02, (0, 0))
                 self.image_right = 1
             self.rect.x -= 1920
-            pygame.event.post(pygame.event.Event(self.background_switch_left))
+            pygame.event.post(pygame.event.Event(BACKGROUND_SWITCH_LEFT))
         elif self.rect.right - 1200 < 200:
             if self.image_right == 1:
                 self.image.blit(self.image_01, (0, 0))
@@ -40,7 +38,7 @@ class Background(pygame.sprite.Sprite):
                 self.image.blit(self.image_02, (0, 0))
                 self.image_right = 1
             self.rect.x += 1920
-            pygame.event.post(pygame.event.Event(self.background_switch_right))
+            pygame.event.post(pygame.event.Event(BACKGROUND_SWITCH_RIGHT))
 
     def update(self):
         self.switch()

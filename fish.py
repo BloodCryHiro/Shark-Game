@@ -20,8 +20,9 @@ class Fish(pygame.sprite.Sprite):
         else:
             self.position_in_map = "left"
 
+        self.isAlive = True
+
     def switch(self, direction):
-        # FIXME: Broken
         if direction == "left":
             if self.position_in_map == "right":
                 self.rect.x -= 1920 * 2
@@ -34,6 +35,13 @@ class Fish(pygame.sprite.Sprite):
                 self.position_in_map = "right"
             else:
                 self.position_in_map = "left"
+
+    def collision_shark(self):
+        # move to a point player can't see
+        self.rect.x = 0
+        self.rect.y = 3000
+        self.isAlive = False
+        # can't move and switch
 
     # def movement(self, shark: Shark):
     #     if distance_to_shark < (500, 500):
